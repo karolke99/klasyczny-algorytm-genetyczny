@@ -1,0 +1,1 @@
+# Klasyczny algorytm genetyczny
