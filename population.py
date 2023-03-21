@@ -4,28 +4,39 @@ import numpy as np
 
 class Population:
 
-    def __init__(self, chromosome_size=None, pop_size=None, variables_number=2):
+    def __init__(self, a=None, b=None, pop_size=None, fitness_function=None):
+        self.a = a
+        self.b = b
         self.decoded_population = None
+        self.evaluated_population = None
         self.population = []
-        population_array = np.random.choice([0, 1], size=(pop_size, variables_number, chromosome_size))
-        # print(population_array)
-        # print("--------------------------")
-        for genome in population_array:
-            individual = Individual(genome)
-            self.population.append(individual)
+
+        self.fitness_function = fitness_function
+
+        self.chromosome_size = fitness_function.get_chromosome_size()
+
+        for i in range(pop_size):
+            self.population.append(Individual(2, self.chromosome_size))
 
         self.size = len(self.population)
-        self.chromosome_size = chromosome_size
 
-    def decode(self):
+    def __str__(self):
+        population_string = f'Population size: {self.size} \n'
+
+        for individual in self.population:
+            population_string += str(individual) + '\n\n'
+
+        return population_string
+
+    def evaluate(self):
 
         self.decoded_population = []
 
         for individual in self.population:
-            # print(individual)
-            decoded_individual = individual.decode(-10, 10, self.chromosome_size)
+            decoded_individual = individual.decode(self.a, self.b, self.chromosome_size)
             self.decoded_population.append(decoded_individual)
 
-        # print(self.decoded_population)
+        self.evaluated_population = np.array([self.fitness_function.compute(individual)
+                                              for individual in self.decoded_population])
 
-        return np.array(self.decoded_population)
+        return self.evaluated_population
