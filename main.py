@@ -13,7 +13,9 @@ if __name__ == '__main__':
 
     selected_tournament = population.select_tournament(3)
 
-    population.double_point_cross(0.8, selected_tournament)
+    new_pop = population.homogeneous_cross(1, selected_tournament)
+
+    population.single_point_mutation(1, new_pop)
 
 
     # for i in range(settings.EPOCH_NUM):

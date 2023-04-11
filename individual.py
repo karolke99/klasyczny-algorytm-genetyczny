@@ -27,3 +27,11 @@ class Individual:
             decoded_array.append(decoded_chromosome)
 
         return np.array(decoded_array)
+
+    def boundary_mutate(self):
+        self.chromosomes[-1] = ~self.chromosomes.astype(bool)[-1]
+
+    def single_point_mutate(self):
+        index = np.random.randint(0, self.chromosome_size * 2)
+        print(index )
+        self.chromosomes[index] = ~self.chromosomes.astype(bool)[index]
