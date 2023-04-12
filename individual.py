@@ -33,5 +33,17 @@ class Individual:
 
     def single_point_mutate(self):
         index = np.random.randint(0, self.chromosome_size * 2)
-        print(index )
         self.chromosomes[index] = ~self.chromosomes.astype(bool)[index]
+
+    def double_point_mutate(self):
+        pool = np.arange(0, self.chromosome_size * 2)
+        indices = np.sort(np.random.choice(pool, size=2, replace=False))
+        self.chromosomes[indices] = ~self.chromosomes.astype(bool)[indices]
+
+    def invert(self):
+        pool = np.arange(0, self.chromosome_size * 2)
+        indices = np.sort(np.random.choice(pool, size=2, replace=False))
+        revert_values = np.flip(self.get_individual()[indices[0]:indices[1]])
+        self.chromosomes[indices[0]:indices[1]] = revert_values
+
+

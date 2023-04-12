@@ -3,6 +3,9 @@ import random
 from individual import *
 import numpy as np
 
+ELITE_STRATEGY = True
+ELITE_NUMBER = 2
+
 
 class Population:
 
@@ -11,7 +14,6 @@ class Population:
         self.b = b
         self.decoded_population = None
         self.evaluated_population = None
-
 
         self.fitness_function = fitness_function
         self.chromosome_size = fitness_function.get_chromosome_size()
@@ -49,12 +51,24 @@ class Population:
 
         return self.evaluated_population
 
+    def get_elite_individuals(self, evaluated_pop, percent=None, number=None):
+
+        sorted_indices = np.argsort(evaluated_pop)
+
+        if percent is not None:
+            smallest_indices = sorted_indices[:int(percent * evaluated_pop.size)]
+
+        if number is not None:
+            smallest_indices = sorted_indices[:number]
+
+        return self.population[smallest_indices]
+
     def select_best(self, percent):
         sorted_indices = np.argsort(self.evaluated_population)[::-1]
         selected_indices = sorted_indices[:int(self.size * percent)]
         return self.population[selected_indices]
 
-    def select_roulette(self, percent):
+    def select_roulette(self, percent=1):
         temp_population = np.array([1 / i for i in self.evaluated_population])
         probabilities = np.array([(i / sum(temp_population)) for i in temp_population])
         distribution = probabilities.cumsum()
@@ -89,6 +103,12 @@ class Population:
     def single_point_cross(self, probability, selected_population):
 
         new_pop = np.array([])
+
+        if ELITE_STRATEGY:
+            elite_individuals = self.get_elite_individuals(self.evaluated_population, number=ELITE_NUMBER)
+            np.append(new_pop, elite_individuals)
+
+
         while new_pop.size < self.size:
             value = np.random.uniform(0., 1.)
             elements_to_cross = np.random.choice(selected_population, size=2, replace=False)
@@ -113,6 +133,11 @@ class Population:
 
     def double_point_cross(self, probability, selected_population):
         new_pop = np.array([])
+
+        if ELITE_STRATEGY:
+            elite_individuals = self.get_elite_individuals(self.evaluated_population, number=ELITE_NUMBER)
+            np.append(new_pop, elite_individuals)
+
         while new_pop.size < self.size:
             value = np.random.uniform(0., 1.)
             elements_to_cross = np.random.choice(selected_population, size=2, replace=False)
@@ -143,6 +168,10 @@ class Population:
 
     def triple_point_cross(self, probability, selected_population):
         new_pop = np.array([])
+
+        if ELITE_STRATEGY:
+            elite_individuals = self.get_elite_individuals(self.evaluated_population, number=ELITE_NUMBER)
+            np.append(new_pop, elite_individuals)
 
         while new_pop.size < self.size:
             value = np.random.uniform(0., 1.)
@@ -176,6 +205,10 @@ class Population:
     def homogeneous_cross(self, probability, selected_population):
         new_pop = np.array([])
 
+        if ELITE_STRATEGY:
+            elite_individuals = self.get_elite_individuals(self.evaluated_population, number=ELITE_NUMBER)
+            np.append(new_pop, elite_individuals)
+
         while new_pop.size < self.size:
             value = np.random.uniform(0., 1.)
             elements_to_cross = np.random.choice(selected_population, size=2, replace=False)
@@ -203,6 +236,7 @@ class Population:
             new_pop = np.append(new_pop, new_individual2)
 
         return new_pop
+
     def boundary_mutation(self, probability, population):
         new_pop = np.array([])
 
@@ -227,3 +261,30 @@ class Population:
 
             new_pop = np.append(new_pop, Individual(2, self.chromosome_size, i.get_individual()))
 
+        return new_pop
+
+    def double_point_mutation(self, probability, population):
+        new_pop = np.array([])
+
+        for i in population:
+            value = np.random.uniform(0., 1.)
+
+            if value < probability:
+                i.double_point_mutate()
+
+            new_pop = np.append(new_pop, Individual(2, self.chromosome_size, i.get_individual()))
+
+        return new_pop
+
+    def inversion(self, probability, population):
+        new_pop = np.array([])
+
+        for i in population:
+            value = np.random.uniform(0., 1.)
+
+            if value < probability:
+                i.invert()
+
+            new_pop = np.append(new_pop, Individual(2, self.chromosome_size, i.get_individual()))
+
+        return new_pop
