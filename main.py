@@ -8,8 +8,6 @@ import settings
 if __name__ == '__main__':
     fitness_fun = FitnessFunction(a=settings.A, b=settings.B, precision=settings.PRECISION)
 
-    individual = Individual(2, fitness_fun.chromosome_size)
-
     population = Population(a=settings.A, b=settings.B, pop_size=settings.POPULATION_SIZE, fitness_function=fitness_fun)
     print(population.evaluate())
 

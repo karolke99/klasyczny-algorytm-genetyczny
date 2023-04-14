@@ -14,7 +14,7 @@ MutationType = {
 
 SelectionType = {
     "ROULETTE": "Roulette",
-    "ELITE": "Elite",
+    "BEST": "Best",
     "TOURNAMENT": "Tournament"
 }
 

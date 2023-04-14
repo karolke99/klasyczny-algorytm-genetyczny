@@ -1,5 +1,7 @@
 class Configuration:
 
+    A = -32.768
+    B = 32.768
     population_size = None
     accuracy = None
     epoch = None
@@ -71,7 +73,7 @@ class Configuration:
         self.selection_type = value
 
     def set_tournament_size(self, value):
-        size = int(value.get())
+        size = float(value.get())
         if size < 0:
             raise Exception("Tournament size must be greater than 0")
         self.tournament_size = size

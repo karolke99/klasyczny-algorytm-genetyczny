@@ -2,13 +2,21 @@ import tkinter
 import tkinter.messagebox
 
 import customtkinter
+import numpy as np
 
 from configuration import Configuration
 from util import EliteStrategyType, SelectionType, CrossingType, MutationType
 
+from fitness_function import *
+from individual import *
+from population import *
+import pandas as pd
+import time
+import matplotlib.pyplot as plt
+
+
 customtkinter.set_appearance_mode("dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
-
 
 class App(customtkinter.CTk):
     configuration = Configuration()
@@ -63,7 +71,7 @@ class App(customtkinter.CTk):
                                                               command=self.change_selection_event)
         self.selection_dropdown.grid(row=6, column=2, pady=10, padx=20)
 
-        self.tournament_size = customtkinter.CTkLabel(master=self.evolution_frame, text="Tournament size:")
+        self.tournament_size = customtkinter.CTkLabel(master=self.evolution_frame, text="Selection size:")
         self.tournament_size.grid(row=7, column=1, padx=10, pady=10)
         self.tournament_size_var = tkinter.StringVar(value='0')
         self.tournament_size_entry = customtkinter.CTkEntry(self.evolution_frame, textvariable=self.tournament_size_var)
@@ -138,11 +146,6 @@ class App(customtkinter.CTk):
                                                     command=self.start)
         self.start_button.grid(row=8, column=1, padx=20, pady=(25, 10))
 
-        self.plot_button = customtkinter.CTkButton(master=self.genetic_operators_frame, fg_color="transparent",
-                                                   border_width=2, text_color=("gray10", "#DCE4EE"),
-                                                   text="Generate plots", command=self.generate_plots)
-        self.plot_button.grid(row=8, column=2, padx=20, pady=(25, 10))
-
         self.result_label = customtkinter.CTkLabel(master=self.genetic_operators_frame, text="X:")
         self.result_label.grid(row=9, column=1, padx=20, pady=10)
         self.result_textbox = customtkinter.CTkTextbox(self.genetic_operators_frame, width=150, height=20)
@@ -184,24 +187,114 @@ class App(customtkinter.CTk):
 
             self.fx_textbox.configure(state="disabled")
             self.result_textbox.configure(state="disabled")
+
         except Exception as e:
             self.open_input_dialog_event(e)
 
-    #     todo
-    # run algorithm here
     def run_algorithm(self):
-        return 0.2637483910, 0.123873463
+        mean = list()
+        standard_deviation = list()
+        best_value = list()
+        fitness_fun = FitnessFunction(self.configuration.A, self.configuration.B,
+                                      precision=self.configuration.accuracy)
 
-    # todo
-    def generate_plots(self):
-        pass
+        population = Population(a=self.configuration.A, b=self.configuration.B,
+                                pop_size=self.configuration.population_size,
+                                fitness_function=fitness_fun)
+
+        evaluated_pop = population.evaluate()
+        mean.append(np.mean(evaluated_pop))
+        standard_deviation.append(np.std(evaluated_pop))
+        best_value.append(np.amin(evaluated_pop))
+        time_start = time.time()
+
+        for i in range(self.configuration.epoch):
+
+            # selection
+            if self.configuration.selection_type == "Roulette":
+                selected_pop = population.select_roulette()
+            elif self.configuration.selection_type == "Tournament":
+                selected_pop = population.select_tournament(self.configuration.tournament_size)
+            elif self.configuration.selection_type == "Best":
+                selected_pop = population.select_best(self.configuration.tournament_size)
+
+            # crossover
+            if self.configuration.crossing_type == "Single point":
+                crossover_pop = population.single_point_cross(self.configuration.crossing_probability, selected_pop,
+                                                              self.configuration.get_elite_group_type(), self.configuration.get_elite_group_size())
+            elif self.configuration.crossing_type == "Two point":
+                crossover_pop = population.double_point_cross(self.configuration.crossing_probability, selected_pop,
+                                                              self.configuration.get_elite_group_type(), self.configuration.get_elite_group_size())
+            elif self.configuration.crossing_type == "Three point":
+                crossover_pop = population.triple_point_cross(self.configuration.crossing_probability, selected_pop,
+                                                              self.configuration.get_elite_group_type(), self.configuration.get_elite_group_size())
+            elif self.configuration.crossing_type == "Homogeneous":
+                crossover_pop = population.homogeneous_cross(self.configuration.crossing_probability, selected_pop,
+                                                             self.configuration.get_elite_group_type(), self.configuration.get_elite_group_size())
+
+            # mutation
+            if self.configuration.mutation_type == "Single point":
+                mutated_pop = population.single_point_mutation(self.configuration.mutation_probability, crossover_pop)
+            elif self.configuration.mutation_type == "Two point":
+                mutated_pop = population.double_point_mutation(self.configuration.mutation_probability, crossover_pop)
+            elif self.configuration.mutation_type == "Edge":
+                mutated_pop = population.boundary_mutation(self.configuration.mutation_probability, crossover_pop)
+
+            inverted_pop = population.inversion(self.configuration.inversion_probability, mutated_pop)
+
+            population = Population(self.configuration.A,
+                                    b=self.configuration.B,
+                                    pop_size=self.configuration.population_size,
+                                    fitness_function=fitness_fun,
+                                    value=inverted_pop)
+
+            evaluated_pop = population.evaluate()
+            mean.append(np.mean(evaluated_pop))
+            standard_deviation.append(np.std(evaluated_pop))
+            best_value.append(np.amin(evaluated_pop))
+            print(evaluated_pop)
+
+        time_end = time.time()
+
+        print(f'Calculation time: {time_end - time_start}')
+
+        min_individual = population.decoded_population[np.argmin(evaluated_pop)]
+        self.generate_mean_plot(mean)
+        self.generate_standard_deviation_plot(standard_deviation)
+        self.generate_best_value_plot(best_value)
+
+        return (min_individual, np.amin(evaluated_pop))
+
+    def generate_mean_plot(self, mean_list):
+        fig, ax = plt.subplots(nrows=1, ncols=1)  # create figure & 1 axis
+        ax.plot(range(len(mean_list)), mean_list)
+        plt.xlabel("epoch")
+        plt.ylabel("mean")
+        fig.savefig('mean.png')  # save the figure to file
+        plt.close(fig)
+
+    def generate_standard_deviation_plot(self, standard_deviation_list):
+        fig, ax = plt.subplots(nrows=1, ncols=1)  # create figure & 1 axis
+        ax.plot(range(len(standard_deviation_list)), standard_deviation_list)
+        plt.xlabel("epoch")
+        plt.ylabel("standard deviation")
+        fig.savefig('standard_deviation.png')  # save the figure to file
+        plt.close(fig)
+
+    def generate_best_value_plot(self, best_value):
+        fig, ax = plt.subplots(nrows=1, ncols=1)  # create figure & 1 axis
+        ax.plot(range(len(best_value)), best_value)
+        plt.xlabel("epoch")
+        plt.ylabel("best value")
+        fig.savefig('best_value.png')  # save the figure to file
+        plt.close(fig)
 
     def open_input_dialog_event(self, error):
         customtkinter.CTkInputDialog(text=error, title="Error occurred")
 
     def change_selection_event(self, value: str):
         self.configuration.set_selection_type(value)
-        if value == SelectionType["TOURNAMENT"]:
+        if value == SelectionType["TOURNAMENT"] or value == SelectionType["BEST"]:
             self.tournament_size_entry.configure(state="normal")
         else:
             self.tournament_size_entry.configure(state="disabled")

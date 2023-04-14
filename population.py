@@ -4,8 +4,6 @@ from individual import *
 import numpy as np
 
 ELITE_STRATEGY = True
-ELITE_NUMBER = 2
-
 
 class Population:
 
@@ -100,13 +98,21 @@ class Population:
 
         return self.population[selected_indices]
 
-    def single_point_cross(self, probability, selected_population):
+    def single_point_cross(self, probability, selected_population, elite_strategy_type, elite_strategy_value):
 
         new_pop = np.array([])
 
         if ELITE_STRATEGY:
-            elite_individuals = self.get_elite_individuals(self.evaluated_population, number=ELITE_NUMBER)
-            np.append(new_pop, elite_individuals)
+            if elite_strategy_type == "%":
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=None,
+                                                               percent=elite_strategy_value)
+                np.append(new_pop, elite_individuals)
+            else:
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=elite_strategy_value,
+                                                               percent=None)
+                np.append(new_pop, elite_individuals)
 
 
         while new_pop.size < self.size:
@@ -131,12 +137,20 @@ class Population:
 
         return new_pop
 
-    def double_point_cross(self, probability, selected_population):
+    def double_point_cross(self, probability, selected_population, elite_strategy_type, elite_strategy_value):
         new_pop = np.array([])
 
         if ELITE_STRATEGY:
-            elite_individuals = self.get_elite_individuals(self.evaluated_population, number=ELITE_NUMBER)
-            np.append(new_pop, elite_individuals)
+            if elite_strategy_type == "%":
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=None,
+                                                               percent=elite_strategy_value)
+                np.append(new_pop, elite_individuals)
+            else:
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=elite_strategy_value,
+                                                               percent=None)
+                np.append(new_pop, elite_individuals)
 
         while new_pop.size < self.size:
             value = np.random.uniform(0., 1.)
@@ -166,12 +180,20 @@ class Population:
 
         return new_pop
 
-    def triple_point_cross(self, probability, selected_population):
+    def triple_point_cross(self, probability, selected_population, elite_strategy_type, elite_strategy_value):
         new_pop = np.array([])
 
         if ELITE_STRATEGY:
-            elite_individuals = self.get_elite_individuals(self.evaluated_population, number=ELITE_NUMBER)
-            np.append(new_pop, elite_individuals)
+            if elite_strategy_type == "%":
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=None,
+                                                               percent=elite_strategy_value)
+                np.append(new_pop, elite_individuals)
+            else:
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=elite_strategy_value,
+                                                               percent=None)
+                np.append(new_pop, elite_individuals)
 
         while new_pop.size < self.size:
             value = np.random.uniform(0., 1.)
@@ -202,12 +224,20 @@ class Population:
 
         return new_pop
 
-    def homogeneous_cross(self, probability, selected_population):
+    def homogeneous_cross(self, probability, selected_population, elite_strategy_type, elite_strategy_value):
         new_pop = np.array([])
 
         if ELITE_STRATEGY:
-            elite_individuals = self.get_elite_individuals(self.evaluated_population, number=ELITE_NUMBER)
-            np.append(new_pop, elite_individuals)
+            if elite_strategy_type == "%":
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=None,
+                                                               percent=elite_strategy_value)
+                np.append(new_pop, elite_individuals)
+            else:
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=elite_strategy_value,
+                                                               percent=None)
+                np.append(new_pop, elite_individuals)
 
         while new_pop.size < self.size:
             value = np.random.uniform(0., 1.)
