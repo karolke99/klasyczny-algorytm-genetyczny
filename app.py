@@ -192,6 +192,7 @@ class App(customtkinter.CTk):
             self.open_input_dialog_event(e)
 
     def run_algorithm(self):
+        evaluation_pop_list = list()
         mean = list()
         standard_deviation = list()
         best_value = list()
@@ -202,10 +203,11 @@ class App(customtkinter.CTk):
                                 pop_size=self.configuration.population_size,
                                 fitness_function=fitness_fun)
 
+        evaluation_pop_list.append(population.evaluate())
         evaluated_pop = population.evaluate()
         mean.append(np.mean(evaluated_pop))
         standard_deviation.append(np.std(evaluated_pop))
-        best_value.append(np.amin(evaluated_pop))
+        best_value.append(np.max(evaluated_pop))
         time_start = time.time()
 
         for i in range(self.configuration.epoch):
@@ -252,6 +254,7 @@ class App(customtkinter.CTk):
             mean.append(np.mean(evaluated_pop))
             standard_deviation.append(np.std(evaluated_pop))
             best_value.append(np.amin(evaluated_pop))
+            evaluation_pop_list.append(population.evaluate())
             print(evaluated_pop)
 
         time_end = time.time()
@@ -262,7 +265,8 @@ class App(customtkinter.CTk):
         self.generate_mean_plot(mean)
         self.generate_standard_deviation_plot(standard_deviation)
         self.generate_best_value_plot(best_value)
-
+        df = pd.DataFrame(evaluation_pop_list)
+        df.to_csv("Data.csv")
         return (min_individual, np.amin(evaluated_pop))
 
     def generate_mean_plot(self, mean_list):
