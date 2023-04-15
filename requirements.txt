@@ -2,4 +2,4 @@ numpy==1.23.4
 customtkinter==5.1.2
 tk==0.1.0
 pandas==2.0.0
-matplotlib
+matplotlib==3.7.1
