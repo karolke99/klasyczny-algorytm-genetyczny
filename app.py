@@ -8,7 +8,6 @@ from configuration import Configuration
 from util import EliteStrategyType, SelectionType, CrossingType, MutationType
 
 from fitness_function import *
-from individual import *
 from population import *
 import pandas as pd
 import time

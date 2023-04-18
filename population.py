@@ -1,9 +1,9 @@
-import random
-
 from individual import *
+from real_individual import *
 import numpy as np
 
 ELITE_STRATEGY = True
+
 
 class Population:
 
@@ -14,12 +14,11 @@ class Population:
         self.evaluated_population = None
 
         self.fitness_function = fitness_function
-        self.chromosome_size = fitness_function.get_chromosome_size()
 
         if value is None:
             self.population = []
             for i in range(pop_size):
-                self.population.append(Individual(2, self.chromosome_size))
+                self.population.append(RealIndividual(2, self.a, self.b, None))
 
             self.population = np.array(self.population)
 
@@ -32,39 +31,21 @@ class Population:
         population_string = f'Population size: {self.size} \n'
 
         for individual in self.population:
-            population_string += str(individual) + '\n\n'
+            population_string += str(individual.chromosomes) + '\n\n'
 
         return population_string
 
-    def evaluate(self):
-
-        self.decoded_population = []
-
-        for individual in self.population:
-            decoded_individual = individual.decode(self.a, self.b, self.chromosome_size)
-            self.decoded_population.append(decoded_individual)
-
-        self.evaluated_population = np.array([self.fitness_function.compute(individual)
-                                              for individual in self.decoded_population])
+    def evaluate_real(self):
+        self.evaluated_population = np.array([self.fitness_function.compute(individual.chromosomes)
+                                              for individual in self.population])
 
         return self.evaluated_population
 
-    def get_elite_individuals(self, evaluated_pop, percent=None, number=None):
-
-        sorted_indices = np.argsort(evaluated_pop)
-
-        if percent is not None:
-            smallest_indices = sorted_indices[:int(percent * evaluated_pop.size)]
-
-        if number is not None:
-            smallest_indices = sorted_indices[:number]
-
-        return self.population[smallest_indices]
-
     def select_best(self, percent):
-        sorted_indices = np.argsort(self.evaluated_population)[::-1]
+        sorted_indices = np.argsort(self.evaluated_population)
         selected_indices = sorted_indices[:int(self.size * percent)]
         return self.population[selected_indices]
+
 
     def select_roulette(self, percent=1):
         temp_population = np.array([1 / i for i in self.evaluated_population])
@@ -98,6 +79,60 @@ class Population:
 
         return self.population[selected_indices]
 
+    def arithmetic_cross(self):
+        pass
+
+    def linear_cross(self):
+        pass
+
+    def average_cross(self):
+        pass
+
+    def blend_cross_alpha(self):
+        pass
+
+    def blend_cross_alpha_beta(self):
+        pass
+
+    def regular_mutation(self):
+        pass
+
+    def gauss_mutation(self):
+        pass
+
+    ############################################################
+
+    def evaluate(self):
+
+        self.decoded_population = []
+
+        for individual in self.population:
+            decoded_individual = individual.decode(self.a, self.b, self.chromosome_size)
+            self.decoded_population.append(decoded_individual)
+
+        self.evaluated_population = np.array([self.fitness_function.compute(individual)
+                                              for individual in self.decoded_population])
+
+        return self.evaluated_population
+
+    def get_elite_individuals(self, evaluated_pop, percent=None, number=None):
+
+        sorted_indices = np.argsort(evaluated_pop)
+
+        if percent is not None:
+            smallest_indices = sorted_indices[:int(percent * evaluated_pop.size)]
+
+        if number is not None:
+            smallest_indices = sorted_indices[:number]
+
+        return self.population[smallest_indices]
+
+
+
+
+
+
+
     def single_point_cross(self, probability, selected_population, elite_strategy_type, elite_strategy_value):
 
         new_pop = np.array([])
@@ -113,7 +148,6 @@ class Population:
                                                                number=elite_strategy_value,
                                                                percent=None)
                 np.append(new_pop, elite_individuals)
-
 
         while new_pop.size < self.size:
             value = np.random.uniform(0., 1.)
