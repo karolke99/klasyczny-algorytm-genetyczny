@@ -14,6 +14,20 @@ class Configuration:
     mutation_type = None
     mutation_probability = None
     inversion_probability = None
+    alpha = None
+    beta = None
+
+    def get_alpha(self):
+        return self.alpha
+
+    def set_alpha(self, alpha):
+        self.alpha = float(alpha.get())
+
+    def get_beta(self):
+        return self.beta
+
+    def set_beta(self, beta):
+        self.beta = float(beta.get())
 
     def get_population_size(self):
         return self.population_size
@@ -82,7 +96,7 @@ class Configuration:
         self.elite_group_type = value
 
     def set_elite_group_size(self, value):
-        size = int(value.get())
+        size = float(value.get())
         if size < 0:
             raise Exception("Elite group size must be equal or greater than 0")
         self.elite_group_size = size

@@ -1,15 +1,15 @@
 
 CrossingType = {
-    "SINGLE_POINT": "Single point",
-    "TWO_POINTS": "Two point",
-    "THREE_POINTS": "Three point",
-    "HOMOGENEOUS": "Homogeneous"
+    "ARITHMETIC_POINT": "Arithmetic",
+    "LINEAR_POINTS": "Linear",
+    "BLEND_ALFA": "Blend Alpha",
+    "BLEND_ALFA_BETA": "Blend Alpha Beta",
+    "AVERAGE": "Average"
 }
 
 MutationType = {
-    "SINGLE_POINT": "Single point",
-    "TWO_POINT": "Two point",
-    "EDGE": "Edge"
+    "EVEN": "Even",
+    "GAUSS": "Gauss",
 }
 
 SelectionType = {
