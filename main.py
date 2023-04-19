@@ -16,19 +16,20 @@ if __name__ == '__main__':
     print(evaluated_pop)
 
     selected_best = population.select_best(0.5)
-    for i in selected_best:
-        print(i.chromosomes)
-
-    print(" ")
 
     selected_roulette = population.select_roulette()
-    for i in selected_roulette:
-        print(i.chromosomes)
+
+    # selected_tournament = population.select_tournament(2)
 
     print(" ")
-    selected_tournament = population.select_tournament(2)
-    for i in selected_tournament:
-        print(i.chromosomes)
+
+    new_pop = population.blend_cross_alpha_beta(1, selected_roulette, 0.25, 0.25, "%", 0)
+
+    new_pop = population.gauss_mutation(1, new_pop)
+
+    for i in new_pop:
+        print(i)
+
 
 
 

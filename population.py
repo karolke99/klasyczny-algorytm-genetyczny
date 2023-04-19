@@ -31,7 +31,7 @@ class Population:
         population_string = f'Population size: {self.size} \n'
 
         for individual in self.population:
-            population_string += str(individual.chromosomes) + '\n\n'
+            population_string += str(individual.chromosomes) + '\n'
 
         return population_string
 
@@ -45,7 +45,6 @@ class Population:
         sorted_indices = np.argsort(self.evaluated_population)
         selected_indices = sorted_indices[:int(self.size * percent)]
         return self.population[selected_indices]
-
 
     def select_roulette(self, percent=1):
         temp_population = np.array([1 / i for i in self.evaluated_population])
@@ -79,26 +78,276 @@ class Population:
 
         return self.population[selected_indices]
 
-    def arithmetic_cross(self):
-        pass
+    def arithmetic_cross(self, probability, selected_population, elite_strategy_type, elite_strategy_value, k=None):
 
-    def linear_cross(self):
-        pass
+        new_pop = np.array([])
 
-    def average_cross(self):
-        pass
+        if k is None:
+            k = np.random.uniform(0., 1.)
 
-    def blend_cross_alpha(self):
-        pass
+        if ELITE_STRATEGY:
+            if elite_strategy_type == "%":
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=None,
+                                                               percent=elite_strategy_value)
+                np.append(new_pop, elite_individuals)
+            else:
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=elite_strategy_value,
+                                                               percent=None)
+                np.append(new_pop, elite_individuals)
 
-    def blend_cross_alpha_beta(self):
-        pass
+        while new_pop.size < self.size:
+            value = np.random.uniform(0., 1.)
+            elements_to_cross = np.random.choice(selected_population, size=2, replace=False)
 
-    def regular_mutation(self):
-        pass
+            if value < probability:
+                new_individual_1 = RealIndividual(2, a=self.a, b=self.b, value=np.array([
+                    (k * elements_to_cross[0].chromosomes[0]) + ((1 - k) * elements_to_cross[1].chromosomes[0]),
+                    (k * elements_to_cross[0].chromosomes[1]) + ((1 - k) * elements_to_cross[1].chromosomes[1])])
+                                                  )
+                new_individual_2 = RealIndividual(2, a=self.a, b=self.b, value=np.array([
+                    ((1 - k) * elements_to_cross[0].chromosomes[0]) + (k * elements_to_cross[1].chromosomes[0]),
+                    ((1 - k) * elements_to_cross[0].chromosomes[1]) + (k * elements_to_cross[1].chromosomes[1])])
+                                                  )
+            else:
+                new_individual_1 = elements_to_cross[0]
+                new_individual_2 = elements_to_cross[1]
 
-    def gauss_mutation(self):
-        pass
+            if np.any(new_individual_1.chromosomes < self.a) or np.any(new_individual_1.chromosomes > self.b) or \
+                    np.any(new_individual_2.chromosomes < self.a) or np.any(new_individual_2.chromosomes > self.b):
+                continue
+
+            new_pop = np.append(new_pop, new_individual_1)
+            new_pop = np.append(new_pop, new_individual_2)
+
+        return new_pop
+
+    def linear_cross(self, probability, selected_population, elite_strategy_type, elite_strategy_value):
+        new_pop = np.array([])
+
+        if ELITE_STRATEGY:
+            if elite_strategy_type == "%":
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=None,
+                                                               percent=elite_strategy_value)
+                np.append(new_pop, elite_individuals)
+            else:
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=elite_strategy_value,
+                                                               percent=None)
+                np.append(new_pop, elite_individuals)
+
+        while new_pop.size < self.size:
+            value = np.random.uniform(0., 1.)
+            elements_to_cross = np.random.choice(selected_population, size=2, replace=False)
+
+            if value < probability:
+
+                z = np.array([
+                    (0.5 * elements_to_cross[0].chromosomes[0]) + (0.5 * elements_to_cross[1].chromosomes[0]),
+                    (0.5 * elements_to_cross[0].chromosomes[1]) + (0.5 * elements_to_cross[1].chromosomes[1])
+                ])
+
+                v = np.array([
+                    ((3. / 2.) * elements_to_cross[0].chromosomes[0]) - (0.5 * elements_to_cross[1].chromosomes[0]),
+                    ((3. / 2.) * elements_to_cross[0].chromosomes[1]) - (0.5 * elements_to_cross[1].chromosomes[1])
+                ])
+
+                w = np.array([
+                    (-0.5 * elements_to_cross[0].chromosomes[0]) + ((3. / 2.) * elements_to_cross[1].chromosomes[0]),
+                    (-0.5 * elements_to_cross[0].chromosomes[1]) + ((3. / 2.) * elements_to_cross[1].chromosomes[1])
+                ])
+
+                evaluated = [self.fitness_function.compute(z), self.fitness_function.compute(v),
+                             self.fitness_function.compute(w)]
+                max_idx = evaluated.index(max(evaluated))
+
+                if max_idx == 0:
+                    new_individual_1 = RealIndividual(2, a=self.a, b=self.b, value=v)
+                    new_individual_2 = RealIndividual(2, a=self.a, b=self.b, value=w)
+                elif max_idx == 1:
+                    new_individual_1 = RealIndividual(2, a=self.a, b=self.b, value=z)
+                    new_individual_2 = RealIndividual(2, a=self.a, b=self.b, value=w)
+                elif max_idx == 2:
+                    new_individual_1 = RealIndividual(2, a=self.a, b=self.b, value=z)
+                    new_individual_2 = RealIndividual(2, a=self.a, b=self.b, value=v)
+
+            else:
+                new_individual_1 = elements_to_cross[0]
+                new_individual_2 = elements_to_cross[1]
+
+            if np.any(new_individual_1.chromosomes < self.a) or np.any(new_individual_1.chromosomes > self.b) or \
+                    np.any(new_individual_2.chromosomes < self.a) or np.any(new_individual_2.chromosomes > self.b):
+                continue
+
+            new_pop = np.append(new_pop, new_individual_1)
+            new_pop = np.append(new_pop, new_individual_2)
+
+        return new_pop
+
+    def average_cross(self, probability, selected_population, elite_strategy_type, elite_strategy_value):
+        new_pop = np.array([])
+
+        if ELITE_STRATEGY:
+            if elite_strategy_type == "%":
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=None,
+                                                               percent=elite_strategy_value)
+                np.append(new_pop, elite_individuals)
+            else:
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=elite_strategy_value,
+                                                               percent=None)
+                np.append(new_pop, elite_individuals)
+
+        while new_pop.size < self.size:
+            value = np.random.uniform(0., 1.)
+            elements_to_cross = np.random.choice(selected_population, size=2, replace=False)
+
+            if value < probability:
+                new_individual = RealIndividual(2, a=self.a, b=self.b, value=np.array([
+                    (elements_to_cross[0].chromosomes[0] + elements_to_cross[1].chromosomes[0]) / 2.,
+                    (elements_to_cross[0].chromosomes[1] + elements_to_cross[1].chromosomes[1]) / 2.
+                ]))
+            else:
+                new_individual = np.random.choice(elements_to_cross, size=1)
+
+            if np.any(new_individual.chromosomes < self.a) or np.any(new_individual.chromosomes > self.b):
+                continue
+
+            new_pop = np.append(new_pop, new_individual)
+
+        return new_pop
+
+    def blend_cross_alpha(self, probability, selected_population, alpha, elite_strategy_type, elite_strategy_value):
+
+        new_pop = np.array([])
+
+        if alpha is None:
+            alpha = np.random.uniform(0., 1.)
+
+        if ELITE_STRATEGY:
+            if elite_strategy_type == "%":
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=None,
+                                                               percent=elite_strategy_value)
+                np.append(new_pop, elite_individuals)
+            else:
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=elite_strategy_value,
+                                                               percent=None)
+                np.append(new_pop, elite_individuals)
+
+        while new_pop.size < self.size:
+            value = np.random.uniform(0., 1.)
+            elements_to_cross = np.random.choice(selected_population, size=2, replace=False)
+
+            if value < probability:
+                min_x = np.min([elements_to_cross[0].chromosomes[0], elements_to_cross[1].chromosomes[0]])
+                min_y = np.min([elements_to_cross[0].chromosomes[1], elements_to_cross[1].chromosomes[1]])
+
+                dx = np.abs(elements_to_cross[0].chromosomes[0] - elements_to_cross[1].chromosomes[0])
+                dy = np.abs(elements_to_cross[0].chromosomes[1] - elements_to_cross[1].chromosomes[1])
+
+                x1_new = np.random.uniform(min_x - (alpha * dx), min_x + (alpha * dx))
+                y1_new = np.random.uniform(min_y - (alpha * dy), min_y + (alpha * dy))
+                new_individual_1 = RealIndividual(2, self.a, self.b, np.array([x1_new, y1_new]))
+
+                x2_new = np.random.uniform(min_x - (alpha * dx), min_x + (alpha * dx))
+                y2_new = np.random.uniform(min_y - (alpha * dy), min_y + (alpha * dy))
+                new_individual_2 = RealIndividual(2, self.a, self.b, np.array([x2_new, y2_new]))
+            else:
+                new_individual_1 = elements_to_cross[0]
+                new_individual_2 = elements_to_cross[1]
+
+            if np.any(new_individual_1.chromosomes < self.a) or np.any(new_individual_1.chromosomes > self.b) or \
+                    np.any(new_individual_2.chromosomes < self.a) or np.any(new_individual_2.chromosomes > self.b):
+                continue
+
+            new_pop = np.append(new_pop, new_individual_1)
+            new_pop = np.append(new_pop, new_individual_2)
+
+        return new_pop
+
+    def blend_cross_alpha_beta(self, probability, selected_population, alpha, beta, elite_strategy_type,
+                               elite_strategy_value):
+
+        new_pop = np.array([])
+
+        if alpha is None:
+            alpha = np.random.uniform(0., 1.)
+        if beta is None:
+            beta = np.random.uniform(0., 1.)
+
+        if ELITE_STRATEGY:
+            if elite_strategy_type == "%":
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=None,
+                                                               percent=elite_strategy_value)
+                np.append(new_pop, elite_individuals)
+            else:
+                elite_individuals = self.get_elite_individuals(self.evaluated_population,
+                                                               number=elite_strategy_value,
+                                                               percent=None)
+                np.append(new_pop, elite_individuals)
+
+        while new_pop.size < self.size:
+            value = np.random.uniform(0., 1.)
+            elements_to_cross = np.random.choice(selected_population, size=2, replace=False)
+
+            if value < probability:
+                min_x = np.min([elements_to_cross[0].chromosomes[0], elements_to_cross[1].chromosomes[0]])
+                min_y = np.min([elements_to_cross[0].chromosomes[1], elements_to_cross[1].chromosomes[1]])
+
+                dx = np.abs(elements_to_cross[0].chromosomes[0] - elements_to_cross[1].chromosomes[0])
+                dy = np.abs(elements_to_cross[0].chromosomes[1] - elements_to_cross[1].chromosomes[1])
+
+                x1_new = np.random.uniform(min_x - (alpha * dx), min_x + (beta * dx))
+                y1_new = np.random.uniform(min_y - (alpha * dy), min_y + (beta * dy))
+                new_individual_1 = RealIndividual(2, self.a, self.b, np.array([x1_new, y1_new]))
+
+                x2_new = np.random.uniform(min_x - (alpha * dx), min_x + (beta * dx))
+                y2_new = np.random.uniform(min_y - (alpha * dy), min_y + (beta * dy))
+                new_individual_2 = RealIndividual(2, self.a, self.b, np.array([x2_new, y2_new]))
+            else:
+                new_individual_1 = elements_to_cross[0]
+                new_individual_2 = elements_to_cross[1]
+
+            if np.any(new_individual_1.chromosomes < self.a) or np.any(new_individual_1.chromosomes > self.b) or \
+                    np.any(new_individual_2.chromosomes < self.a) or np.any(new_individual_2.chromosomes > self.b):
+                continue
+
+            new_pop = np.append(new_pop, new_individual_1)
+            new_pop = np.append(new_pop, new_individual_2)
+
+        return new_pop
+
+    def regular_mutation(self, probability, population):
+        new_pop = np.array([])
+
+        for i in population:
+            value = np.random.uniform(0., 1.)
+
+            if value < probability:
+                i.regular_mutate()
+
+            new_pop = np.append(new_pop, RealIndividual(2, self.a, self.b, i.chromosomes))
+
+        return new_pop
+
+    def gauss_mutation(self, probability, population):
+        new_pop = np.array([])
+
+        for i in population:
+            value = np.random.uniform(0., 1.)
+
+            if value < probability:
+                i.gauss_mutate()
+
+            new_pop = np.append(new_pop, RealIndividual(2, self.a, self.b, i.chromosomes))
+
+        return new_pop
 
     ############################################################
 
@@ -126,12 +375,6 @@ class Population:
             smallest_indices = sorted_indices[:number]
 
         return self.population[smallest_indices]
-
-
-
-
-
-
 
     def single_point_cross(self, probability, selected_population, elite_strategy_type, elite_strategy_value):
 
