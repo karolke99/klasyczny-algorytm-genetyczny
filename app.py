@@ -13,9 +13,9 @@ import pandas as pd
 import time
 import matplotlib.pyplot as plt
 
-
 customtkinter.set_appearance_mode("dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
+
 
 class App(customtkinter.CTk):
     configuration = Configuration()
@@ -222,7 +222,6 @@ class App(customtkinter.CTk):
             elif self.configuration.selection_type == SelectionType["BEST"]:
                 selected_pop = population.select_best(self.configuration.tournament_size)
 
-
             # crossover
             if self.configuration.crossing_type == CrossingType["ARITHMETIC_POINT"]:
                 crossover_pop = population.arithmetic_cross(self.configuration.crossing_probability,
@@ -276,9 +275,9 @@ class App(customtkinter.CTk):
 
         print(f'Calculation time: {time_end - time_start}')
 
-        min_individual = np.argmin(evaluated_pop)
+        # min_individual = np.argmin(evaluated_pop)
 
-        # min_individual = population.decoded_population[np.argmin(evaluated_pop)]
+        min_individual = population.population[np.argmin(evaluated_pop)]
         self.generate_mean_plot(mean)
         self.generate_standard_deviation_plot(standard_deviation)
         self.generate_best_value_plot(best_value)
