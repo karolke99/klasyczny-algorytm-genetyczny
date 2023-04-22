@@ -43,11 +43,11 @@ class App(customtkinter.CTk):
                                                             textvariable=self.population_size_var)
         self.population_size_entry.grid(row=1, column=2, padx=10, pady=5)
 
-        self.accuracy_label = customtkinter.CTkLabel(master=self.evolution_frame, text="Accuracy:")
-        self.accuracy_label.grid(row=2, column=1, padx=10, pady=5)
-        self.accuracy_var = tkinter.StringVar(value='0')
-        self.accuracy_entry = customtkinter.CTkEntry(self.evolution_frame, textvariable=self.accuracy_var)
-        self.accuracy_entry.grid(row=2, column=2, padx=10, pady=5)
+        # self.accuracy_label = customtkinter.CTkLabel(master=self.evolution_frame, text="Accuracy:")
+        # self.accuracy_label.grid(row=2, column=1, padx=10, pady=5)
+        # self.accuracy_var = tkinter.StringVar(value='0')
+        # self.accuracy_entry = customtkinter.CTkEntry(self.evolution_frame, textvariable=self.accuracy_var)
+        # self.accuracy_entry.grid(row=2, column=2, padx=10, pady=5)
 
         # Epochs
         self.epochs_label = customtkinter.CTkLabel(master=self.evolution_frame, text="Epochs")
@@ -171,7 +171,7 @@ class App(customtkinter.CTk):
         try:
             self.configuration.set_population_size(self.population_size_var)
             self.configuration.set_epoch(self.epochs_number_var)
-            self.configuration.set_accuracy(self.accuracy_var)
+            # self.configuration.set_accuracy(self.accuracy_var)
             self.configuration.set_tournament_size(self.tournament_size_var)
             self.configuration.set_elite_group_size(self.elite_group_size_var)
             self.configuration.set_mutation_probability(self.mutation_probability_var)
@@ -274,8 +274,6 @@ class App(customtkinter.CTk):
         time_end = time.time()
 
         print(f'Calculation time: {time_end - time_start}')
-
-        # min_individual = np.argmin(evaluated_pop)
 
         min_individual = population.population[np.argmin(evaluated_pop)]
         self.generate_mean_plot(mean)
