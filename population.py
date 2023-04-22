@@ -210,7 +210,8 @@ class Population:
                     (elements_to_cross[0].chromosomes[1] + elements_to_cross[1].chromosomes[1]) / 2.
                 ]))
             else:
-                new_individual = np.random.choice(elements_to_cross, size=1)
+                new_individual = RealIndividual(2, a=self.a, b=self.b, value=elements_to_cross[np.random.randint(2)].chromosomes)
+
 
             if np.any(new_individual.chromosomes < self.a) or np.any(new_individual.chromosomes > self.b):
                 continue
