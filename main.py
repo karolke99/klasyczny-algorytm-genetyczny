@@ -1,6 +1,5 @@
 from fitness_function import *
 from population import *
-from real_individual import *
 import settings
 
 # Percent podajemy w ułamku np. 50% = 0.5 tj. select_best(0.5) oznacza, że wybranych zostanie 50% osobników
